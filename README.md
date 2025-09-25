@@ -11,16 +11,16 @@ Neste projeto, abordaremos a arquitetura e o passo-a-passo para implantar um sis
 
 ## ✅ Índice
 
-* [A arquitetura](#a-arquitetura)
-* [Recursos que serão utilizados neste projeto](#recursos-que-serão-utilizados-neste-projeto)
-* [Configurando a VPC e subnets](#configurando-a-vpc-e-subnets)
-* [Configurando o Banco de Dados RDS](#configurando-o-banco-de-dados-rds)
-* [Configurando o volume EFS](#configurando-o-volume-efs)
-* [Configurando os grupos de segurança](#configurando-os-grupos-de-segurança)
-* [Configurando instância "bastion"](#configurando-instância-bastion)
-* [Criando modelo de execução para Auto Scaling Group](#criando-modelo-de-execução-para-auto-scaling-group)
-* [Configuração do Auto Scaling Group e load balancer](#configuração-do-auto-scaling-group-e-load-balancer)
-* [Conclusão](#conclusão)
+- A arquitetura
+- Recursos que serão utilizados neste projeto  
+- Configurando a VPC e subnets  
+- Configurando o Banco de Dados RDS  
+- Configurando o volume EFS  
+- Configurando os grupos de segurança  
+- Configurando instância "bastion"  
+- Criando modelo de execução para Auto Scaling Group  
+- Configuração do Auto Scaling Group e load balancer  
+- Conclusão
 
 ## 🛠️ A arquitetura
 É essencial em uma arquitetura moderna disponível na web que a mesma seja resliente a falhas, altamente disponível e escalável, permitindo o seu crescimento
