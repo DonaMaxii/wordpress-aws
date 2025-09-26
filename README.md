@@ -88,13 +88,11 @@ Para criar um banco de dados para o Wordpress, basta seguir os seguintes passos:
 - Passo 4: Em *"Modelos"*, selecione *"Nível gratuito"*;
 
 - Passo 5: Nas *"Configurações de credenciais"*, informe os seguintes parâmetros:
-
-    - "Identificador da instância de banco de dados": database-wordpress
-
-    - "Nome do usuário principal": admin
-
-    - Senha principal = SenhaSuperSecreta!123
-
+>
+    Identificador da instância de banco de dados: database-wordpress
+    Nome do usuário principal": admin
+    Senha principal = SenhaSuperSecreta!123
+>
 - Passo 6: Em *"Configuração da instância"*, escolha a opção *"db.t3.micro"*;
 
 - Passo 7: em "Armazenamento", abra a lista "Configuração adicional de armazenamento" e desabilite a opção "
