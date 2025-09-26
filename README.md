@@ -26,7 +26,7 @@ Neste projeto, abordaremos a arquitetura e o passo-a-passo para implantar um sis
 É essencial em uma arquitetura moderna disponível na web que a mesma seja resliente a falhas, altamente disponível e escalável, permitindo o seu crescimento
 e que seu desempenho seja o maior possível.
 
-(imagem mostrando a arquitetura deste projeto - project-diagram.jpg)
+![Diagrama da arquitetura](diagrama.jpg)
 
 Dessa forma, a arquitetura que trabalharemos neste projeto terá, dentre os principais elementos, instâncias EC2 gerenciadas por um Auto Scaling Group (ASG), com balanceamento de carga fornecido por um Application Load Balancer (ALB). Além disso, o armazenamento da aplicação será destinado a um banco de dados RDS (em single-AZ), enquanto o armazenamento de arquivos será centralizado no Amazon Elastic File System (EFS).
 
@@ -309,3 +309,5 @@ Com todos os passos concluídos, basta aguardar alguns minutos até que o provis
 Se você chegou até aqui, muito obrigada pela atenção. Seguindo os passos acima, é perfeitamente possível por no ar um sistema Wordpress, escalável e allto-disponível e em nuvem em poucos minutos!
 
 Até a próxima!
+
+![Tela de Instalação do Wordpress](sucesso.jpeg)
