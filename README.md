@@ -60,11 +60,11 @@ Essa separação é ideal para isolarmos os servidores críticos de nossa aplica
 - Passo 4: Defina os seguintes parâmetros para a criação dda VPC:
 
 >
-        Nome da VPC: vpc-wordpress
-        Número de subredes públicas: 2
-        Número de subredes privadas: 2
-        Gateway NAT: em 1 AZ
-        Endpoints da VPC: Nenhuma
+    Nome da VPC: vpc-wordpress
+    Número de subredes públicas: 2
+    Número de subredes privadas: 2
+    Gateway NAT: em 1 AZ
+    Endpoints da VPC: Nenhuma
 >
 
 - Passo 5: Por fim, clique em "Criar VPC". O console da AWS providenciará a criação do fluxo de trabalho da VPC.
@@ -89,11 +89,11 @@ Para criar um banco de dados para o Wordpress, basta seguir os seguintes passos:
 
 - Passo 5: Nas *"Configurações de credenciais"*, informe os seguintes parâmetros:
 
-        - "Identificador da instância de banco de dados": database-wordpress
+    - "Identificador da instância de banco de dados": database-wordpress
 
-        - "Nome do usuário principal": admin
+    - "Nome do usuário principal": admin
 
-        - Senha principal = SenhaSuperSecreta!123
+    - Senha principal = SenhaSuperSecreta!123
 
 - Passo 6: Em *"Configuração da instância"*, escolha a opção *"db.t3.micro"*;
 
@@ -178,6 +178,42 @@ Através dos grupos de segurança, é possível liberar o acesso excluivo pelo s
 
 Para criar, basta utilizar ass configurações básicas para uma instância EC2, porém em subnet pública e com o par de chaves .pem, necessário para acesso via SSH. Não é necessário userdata.
 
+Para acesso via SSH à instância através do bastion, seguiremos estes passos:
+
+- Passo 1: defina as permisssões adequadas à sua chave .pem:
+
+>
+    cd <diretorio-da-chave>
+    sudo chmod 400 <sua-chave>.pem
+>
+
+- Passo 2: envie a chave .pem para a instância bastion:
+
+>
+    scp -i <sua-chave>.pem ec2-user@<ip-do-bastion>:~/
+>
+
+- Passo 3: acesse a instância via SSH:
+
+>
+    ssh -i "keys-demo.pem" ec2-user@<ip-do-bastion>
+>
+
+- Passo 4: dentro do bastion, defina a permissão adequada par a chave, novamente:
+
+>
+    sudo chmod 400 <sua-chave>.pem
+>
+
+- Passo 5: acesse a instância EC2 via SSH:
+
+>
+    ssh -i "keys-demo.pem" ec2-user@<ip-da-instancia-privada>
+>
+
+Dessa maneira, estando o bastion em uma sub-rede pública e a instância destino, em uma sub-rede privada, é possível via SSH acessar esta instância, desde que os grupos de segurança permitam essa conexão. 
+
+
 ## 📸 Criando modelo de execução para Auto Scaling Group
 
 O processo de criação de um Modelo de Execução é muito semelhante a criar uma instância EC2 convencional, com a diferença que desta vez, será definido um modelo que irá ser base de todas as instâncias geradas pelo ASG.
@@ -185,88 +221,88 @@ O processo de criação de um Modelo de Execução é muito semelhante a criar u
 - Passo 1: Configure o modelo de execução conforme os parâmetros abaixo:
 
 >
-        Nome do modelo: <modelo-de-execucao-wordpress>
-        Imagens de aplicação e de sistema operacional: Amazon Linux (qualificada para o nível gratuito)
-        Imagem de máquina da Amazon: Amazon Linux 2023 (kernel-6.1)
-        Tipo de instância: t2.micro (qualificada para o nível gratuito)
-        Par de chaves: <sua-chave>.pem
-        Firewall (grupos de segurança): <grupo-de-seguranca-do-auto-scaling-group>
+    Nome do modelo: <modelo-de-execucao-wordpress>
+    Imagens de aplicação e de sistema operacional: Amazon Linux (qualificada para o nível gratuito)
+    Imagem de máquina da Amazon: Amazon Linux 2023 (kernel-6.1)
+    Tipo de instância: t2.micro (qualificada para o nível gratuito)
+    Par de chaves: <sua-chave>.pem
+    Firewall (grupos de segurança): <grupo-de-seguranca-do-auto-scaling-group>
 >
 
 - Passo 2: em "Detalhes avançados --> Dados do usuário (opcional)", cole ou anexe o conteúdo do *userdata*:
 
 >
-        #!/bin/bash
+    #!/bin/bash
 
-        # instalando docker na instancia
-        sudo yum update -y
-        sudo yum install docker -y
-        sudo service docker start
-        sudo usermod -aG docker ec2-user
+    # instalando docker na instancia
+    sudo yum update -y
+    sudo yum install docker -y
+    sudo service docker start
+    sudo usermod -aG docker ec2-user
 
-        # montando sistema EFS
-        sudo yum install -y amazon-efs-utils
-        sudo yum install -y nfs-utils
-        sudo mkdir -p /mnt/efs
+    # montando sistema EFS
+    sudo yum install -y amazon-efs-utils
+    sudo yum install -y nfs-utils
+    sudo mkdir -p /mnt/efs
 
-        #Laço para três tentativas de montagem
-        EFS_OK=false
-        for i in {1..3}; do
-        if timeout 30 sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport <id-do-sistema-de-arquivos>.efs.us-east-1.amazonaws.com:/ /mnt/efs 2>/dev/null; then
-            echo "--> EFS montado com sucesso na tentativa $i" >> /home/ec2-user/efs.log
-            EFS_OK=true
-            break
-        else
-            echo "--> Tentativa $i de montagem do EFS falhou, continuando..." >> /home/ec2-user/efs.log
-            sleep 5
-        fi
-        done
+    #Laço para três tentativas de montagem
+    EFS_OK=false
+    for i in {1..3}; do
+    if timeout 30 sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport <id-do-sistema-de-arquivos>.efs.us-east-1.amazonaws.com:/ /mnt/efs 2>/dev/null; then
+        echo "--> EFS montado com sucesso na tentativa $i" >> /home/ec2-user/efs.log
+        EFS_OK=true
+        break
+    else
+        echo "--> Tentativa $i de montagem do EFS falhou, continuando..." >> /home/ec2-user/efs.log
+        sleep 5
+    fi
+    done
 
-        #Adicionar ponto de montagem ao fstab (persistência)
-        if [ "$EFS_OK" = true ]; then
-        echo "<id-do-sistema-de-arquivos>.efs.us-east-1.amazonaws.com:/ /mnt/efs nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=60,retrans=1,noresvport 0 0" | sudo tee -a /etc/fstab
-        echo "--> EFS Adicionado ao fstab com sucesso." >> ~/efs.log
-        else
-        echo "--> EFS não disponível - continuando sem armazenamento compartilhado" >> ~/efs.log
-        fi
+    #Adicionar ponto de montagem ao fstab (persistência)
+    if [ "$EFS_OK" = true ]; then
+    echo "<id-do-sistema-de-arquivos>.efs.us-east-1.amazonaws.com:/ /mnt/efs nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=60,retrans=1,noresvport 0 0" | sudo tee -a /etc/fstab
+    echo "--> EFS Adicionado ao fstab com sucesso." >> ~/efs.log
+    else
+    echo "--> EFS não disponível - continuando sem armazenamento compartilhado" >> ~/efs.log
+    fi
 
-        # configurando docker compose
-        mkdir -p /home/ec2-user/wordpress
-        sudo chown -R ec2-user:ec2-user /home/ec2-user/wordpress
-        cat << EOF > /home/ec2-user/wordpress/docker-compose.yml
-        services:
-        wordpress:
-            image: wordpress:latest
-            container_name: wordpress
-            ports:
-            - "80:80"
-            environment:
-            WORDPRESS_DB_HOST: <endpoint-do-banco-de-dados>
-            WORDPRESS_DB_USER: <usuario-db>
-            WORDPRESS_DB_PASSWORD: <senha-db>
-            WORDPRESS_DB_NAME: <nome-inicial-db>
-            volumes:
-            - /mnt/efs:/var/www/html
-            healthcheck:
-            test: ["CMD", "curl", "-fs", "http://localhost/wp-login.php"]
-            interval: 30s
-            timeout: 10s
-            retries: 5
-        EOF
+    # configurando docker compose
+    mkdir -p /home/ec2-user/wordpress
+    sudo chown -R ec2-user:ec2-user /home/ec2-user/wordpress
+    cat << EOF > /home/ec2-user/wordpress/docker-compose.yml
+    services:
+    wordpress:
+        image: wordpress:latest
+        container_name: wordpress
+        ports:
+        - "80:80"
+        environment:
+        WORDPRESS_DB_HOST: <endpoint-do-banco-de-dados>
+        WORDPRESS_DB_USER: <usuario-db>
+        WORDPRESS_DB_PASSWORD: <senha-db>
+        WORDPRESS_DB_NAME: <nome-inicial-db>
+        volumes:
+        - /mnt/efs:/var/www/html
+        healthcheck:
+        test: ["CMD", "curl", "-fs", "http://localhost/wp-login.php"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+    EOF
 
-        # instalando docker-compose
-        sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        sudo chmod +x /usr/local/bin/docker-compose
-        sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+    # instalando docker-compose
+    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+    sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
-        #Configurando permissões do ponto de montagem
-        sudo mkdir -p /mnt/efs/wordpress
-        sudo chown -R 33:33 /mnt/efs/
-        sudo chmod -R 775 /mnt/efs/
+    #Configurando permissões do ponto de montagem
+    sudo mkdir -p /mnt/efs/wordpress
+    sudo chown -R 33:33 /mnt/efs/
+    sudo chmod -R 775 /mnt/efs/
 
-        # rodando container app
-        cd /home/ec2-user/wordpress
-        docker-compose up -d
+    # rodando container app
+    cd /home/ec2-user/wordpress
+    docker-compose up -d
 >
 - Passo 3: Clique em "Criar modelo de execução".
 
@@ -287,11 +323,11 @@ Nesta etapa, serão configurados os modelos de execução e o Auto Scaling Group
 - Passo 6: Para configurar o load balancer rapidamente, basta escolher os seguintes parâmetros:
 
 >
-        Tipo de balanceador de carga: Application Load Balancer (HTTP, HTTPS)
-        Nome do balanceador de carga: <nome-do-load-balancer>
-        Esquema do balanceador de carga: Internet-facing
-        Zonas de disponibilidade e sub-redes: <as subnets públicas do vpc>
-        Listeners e roteamento: Criar um grupo de destino --> <target-group-name>
+    Tipo de balanceador de carga: Application Load Balancer (HTTP, HTTPS)
+    Nome do balanceador de carga: <nome-do-load-balancer>
+    Esquema do balanceador de carga: Internet-facing
+    Zonas de disponibilidade e sub-redes: <as subnets públicas do vpc>
+    Listeners e roteamento: Criar um grupo de destino --> <target-group-name>
 >
 
 - Passo 7: Aqui, vamos configurar o tamanho do grupo e ajuste de escala, definindo quantas instâncias estarão ativas e o tamanho mínimo e o máximo do grupo de instâncias, conforme a necessidade.
