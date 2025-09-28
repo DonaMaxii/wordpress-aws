@@ -19,12 +19,11 @@ Neste projeto, abordaremos a arquitetura e o passo-a-passo para implantar um sis
 - Configurando os grupos de segurança  
 - Configurando instância "bastion"  
 - Criando modelo de execução para Auto Scaling Group  
-- Configuração do Auto Scaling Group e load balancer  
+- Configuração do Auto Scaling Group e Load Balancer  
 - Conclusão
 
 ## 🛠️ A arquitetura
-É essencial em uma arquitetura moderna disponível na web que a mesma seja resliente a falhas, altamente disponível e escalável, permitindo o seu crescimento
-e que seu desempenho seja o maior possível.
+É essencial em uma arquitetura moderna disponível na web que a mesma seja resliente a falhas, altamente disponível e escalável, permitindo o seu crescimento e que seu desempenho seja o maior possível.
 
 ![Diagrama da arquitetura](diagrama.jpg)
 
@@ -47,7 +46,7 @@ A lógica para o provisionamento da aplicação através do Docker segue uma ló
 
 O primeiro passo neste projeto, agora no contexto de serviço em nuvem, é montar na AWS a base de toda a arquitetura, que consiste na VPC (Virtual Private Cloud) e, dentro desta, as subnets ppublicas e privadas.
 
-A VPC é basicamente um "pedacinho" da nuvem que é separada pela AWS para o seu projeto. Dentro dela, serão confuguradas 2 subnets públicas (para Gateway de internet, bastion, NAT Gateway, etc.) mais 2 subnets privadas (para as instancias EC2, RDS e EFS). 
+A VPC é basicamente um "pedacinho" da nuvem que é separada pela AWS para o seu projeto. Dentro dela, serão configuradas 2 subnets públicas (para Gateway de internet, bastion, NAT Gateway, etc.) mais 2 subnets privadas (para as instâncias EC2, RDS e EFS). 
 
 Essa separação é ideal para isolarmos os servidores críticos de nossa aplicação, mantendo-os isolados da internet e protegidos de eventuais tentativas de acesso malicioso.
 
@@ -57,7 +56,7 @@ Essa separação é ideal para isolarmos os servidores críticos de nossa aplica
 
 - Passo 3: clique na opção "VPC e muito mais". Essa opção cria automaticamente a tablea de rotas, facilitando o processo de montagem da VPC;
 
-- Passo 4: Defina os seguintes parâmetros para a criação dda VPC:
+- Passo 4: Defina os seguintes parâmetros para a criação da VPC:
 
 >
     Nome da VPC: vpc-wordpress
@@ -69,13 +68,13 @@ Essa separação é ideal para isolarmos os servidores críticos de nossa aplica
 
 - Passo 5: Por fim, clique em "Criar VPC". O console da AWS providenciará a criação do fluxo de trabalho da VPC.
 
-Ao final, você deverá ter uma estrutura de rede em nuvem e sub redes, com entrada saída para a internet, prota para receber as instãncias necessárias para a aplicação Web funcionar.
+Ao final, você deverá ter uma estrutura de rede em nuvem e sub redes, com entrada e saída para a internet, pronta para receber as instâncias necessárias para a aplicação Web funcionar.
 
-OBS: é __ALTAMENTE aconselhado__, caso tenha sido criado NAT Gateway e atribuído Ip elástico, que, caso não seja configuradas instâncias em subredes privadas que precisem desses recursos ambos sejam __deletados neste momento__ e recriados posteriormente, para economia de recursos na AWS. Esses dois são cobrados por GB e por hora de uso, o que pode ser um dos vilões da fatura no fim do mês.
+OBS: é __ALTAMENTE aconselhado__, caso tenha sido criado NAT Gateway e atribuído Ip elástico, que, caso não seja configuradas instâncias em subredes privadas que precisem desses recursos, ambos sejam __deletados neste momento__ e recriados posteriormente, para economia de recursos na AWS. Esses dois são cobrados por GB e por hora de uso, o que pode ser um dos vilões da fatura no fim do mês.
 
 ## 🗃️ Configurando o Banco de Dados RDS
 
-RDS, ou Relational Database Service, é o serviço da AWS responsável por, como o próprio nome diz, permitir a criação de servidores de banco de dados relacional. Dentre as principais tecnologias suportadas, temos o MySQL, MariaDB, PostGRE, Aurora (nativo da Amazon), Microsoft SQL Server, dentre outros.
+RDS, ou Relational Database Service, é o serviço da AWS responsável por, como o próprio nome diz, permitir a criação de servidores de banco de dados relacional. Dentre as principais tecnologias suportadas, temos o MySQL, MariaDB, PostGRE, Aurora (nativo da Amazon), Microsoft SQL Server, entre outros.
 
 Para criar um banco de dados para o Wordpress, basta seguir os seguintes passos:
 
@@ -95,8 +94,7 @@ Para criar um banco de dados para o Wordpress, basta seguir os seguintes passos:
 >
 - Passo 6: Em *"Configuração da instância"*, escolha a opção *"db.t3.micro"*;
 
-- Passo 7: em "Armazenamento", abra a lista "Configuração adicional de armazenamento" e desabilite a opção "
-Habilitar escalabilidade automática do armazenamento".
+- Passo 7: em "Armazenamento", abra a lista "Configuração adicional de armazenamento" e desabilite a opção "Habilitar escalabilidade automática do armazenamento".
 
 - Passo 8: em "Conectividade --> Nuvem privada virtual (VPC)", escolha a VPC "VPC-Wordpress". Em "Acesso Público", opte por "Não".
 
@@ -109,7 +107,7 @@ Habilitar escalabilidade automática do armazenamento".
         Protocolo: TCP
         Intervalo de portas: 3306
         Tipo de Origem: Personalizado
-        Origem: "id do grupo de segurança da instancia EC2" (será criada em breve)
+        Origem: <id do grupo de segurança da instancia EC2>
 >
 
 - Passo 10: em "Configuração adicional --> Porta do banco de dados", certifique-se que a porta configurada é a *3306*.
@@ -122,7 +120,7 @@ Observação: podem sem atribuídos outros nomes para os parâmetros pedidos nes
 
 ## 📂 Configurando o volume EFS
 
-O vlolume EFS será responsável por criar persistẽncia ao nosso projeto. Ou seja, alterações realizadas no Wordpress serão salvas nesse volume persistente.
+O vlolume EFS será responsável por criar persistência ao nosso projeto. Ou seja, alterações realizadas no Wordpress serão salvas nesse volume persistente.
 
 Além disso, o EFS será responssável por permitir que todas as instâncias criadas em contexto de Auto Scaling Group tenham acesso aos dados já salvos, evitando reconfiguração constante.
 
@@ -146,12 +144,12 @@ Além disso, o EFS será responssável por permitir que todas as instâncias cri
 
 Os grupos de segurança são imprescindíveis para manter a arquitetura em nuvem segura. Quando bem configurados, esses grupos protegem o ecossistema da aplicação de ataques maliciosos vindos de fora.
 
-Cada um dos ementos da arquitetura pode estar contido em um grupo de segurança, que possui seu pacote de regras de entrada e de saída. Essas regras, por princípio, são sempre **restritivas**, isto é, tudo é "proibido", salvo aquilo que que diga o contrário (regras de entrada).
+Cada um dos ementos da arquitetura pode estar contido em um grupo de segurança, que possui seu pacote de regras de entrada e de saída. Essas regras, por princípio, são sempre **restritivas**, isto é, tudo é "proibido", salvo aquilo que se diga o contrário (regras de entrada).
 
 Abaixo, a configuração recomendada para cada grupo de segurança:
 
 ### Grupo de segurança para instâncias em Auto Scaling Group
-    - Regra de entrada 1: HTTP | Porta 80 | Origem: Origem: sg-aaaaaaaaaaaaaaaaa(grupo de segurança do load balancer)
+    - Regra de entrada 1: HTTP | Porta 80 | Origem: Origem: sg-aaaaaaaaaaaaaaaaa (grupo de segurança do load balancer)
     - Regra de entrada 2: MYSQL/Aurora | Porta 3306 | Origem: sg-zzzzzzzzzzzzzzzzz (grupo de segurança do banco de dados RDS)
     - Regra de entrada 3: SSH | Porta 22 | Origem: sg-bbbbbbbbbbbbbbbbb (grupo de segurança do servidor "bastion")
     - Regra de entrada 4: NFS | Porta 2049 | Origem: sg-yyyyyyyyyyyyyyyyy (grupo de segurança do volume EFS)
@@ -174,11 +172,11 @@ Bastion é um servidor responsavel exclusivamente para acessar, via SSH, as inst
 
 Através dos grupos de segurança, é possível liberar o acesso excluivo pelo servidor Bastion, este com acesso liberado da internet (0.0.0.0/0 ou IP do usuário. Assim, fica mais fácil, por exemplo, o processo de resolução de problemas diretamente na instância, sem precisar torná-la pública.
 
-Para criar, basta utilizar ass configurações básicas para uma instância EC2, porém em subnet pública e com o par de chaves .pem, necessário para acesso via SSH. Não é necessário userdata.
+Para criar, basta utilizar as configurações básicas para uma instância EC2, porém em sub-rede pública e com o par de chaves ".pem", necessário para acesso via SSH. Não é necessário *userdata*.
 
 Para acesso via SSH à instância através do bastion, seguiremos estes passos:
 
-- Passo 1: defina as permisssões adequadas à sua chave .pem:
+- Passo 1: defina as permisssões adequadas à sua chave ".pem":
 
 >
     cd <diretorio-da-chave>
@@ -197,7 +195,7 @@ Para acesso via SSH à instância através do bastion, seguiremos estes passos:
     ssh -i "keys-demo.pem" ec2-user@<ip-do-bastion>
 >
 
-- Passo 4: dentro do bastion, defina a permissão adequada par a chave, novamente:
+- Passo 4: dentro do bastion, defina a permissão adequada para a chave, novamente:
 
 >
     sudo chmod 400 <sua-chave>.pem
@@ -209,7 +207,7 @@ Para acesso via SSH à instância através do bastion, seguiremos estes passos:
     ssh -i "keys-demo.pem" ec2-user@<ip-da-instancia-privada>
 >
 
-Dessa maneira, estando o bastion em uma sub-rede pública e a instância destino, em uma sub-rede privada, é possível via SSH acessar esta instância, desde que os grupos de segurança permitam essa conexão. 
+Dessa maneira, estando o bastion em uma sub-rede pública e a instância-destino, em uma sub-rede privada, é possível via SSH acessar esta instância, desde que os grupos de segurança permitam essa conexão. 
 
 
 ## 📸 Criando modelo de execução para Auto Scaling Group
@@ -304,7 +302,7 @@ O processo de criação de um Modelo de Execução é muito semelhante a criar u
 >
 - Passo 3: Clique em "Criar modelo de execução".
 
-## 🖥️ Configuração do Auto Scaling Group e load balancer 
+## 🖥️ Configuração do Auto Scaling Group e Load Balancer 
 
 Nesta etapa, serão configurados os modelos de execução e o Auto Scaling Group (Grupo de escalonamento automático), item imprescindível para a escalabilidade do projeto.
 
@@ -340,7 +338,7 @@ Com todos os passos concluídos, basta aguardar alguns minutos até que o provis
 
 ## 🎉 Conclusão
 
-Se você chegou até aqui, muito obrigada pela atenção. Seguindo os passos acima, é perfeitamente possível por no ar um sistema Wordpress, escalável e allto-disponível e em nuvem em poucos minutos!
+Se você chegou até aqui, muito obrigada pela atenção. Seguindo os passos acima, é perfeitamente possível por no ar um sistema Wordpress, escalável e alto-disponível e em nuvem em poucos minutos!
 
 Até a próxima!
 
